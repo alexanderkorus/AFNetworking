@@ -1,4 +1,4 @@
-// AFUIWebViewTests.h
+// AFWKWebViewTests.m
 // Copyright (c) 2011–2016 Alamofire Software Foundation ( http://alamofire.org/ )
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,20 +21,22 @@
 
 #import <XCTest/XCTest.h>
 #import "AFTestCase.h"
-#import "UIWebView+AFNetworking.h"
+#import "WKWebView+AFNetworking.h"
 
-@interface AFUIWebViewTests : AFTestCase
+@interface AFWKWebViewTests : AFTestCase
 
-@property (nonatomic, strong) UIWebView *webView;
+@property (nonatomic, strong) WKWebView *webView;
+@property (nonatomic, strong) WKNavigation *navigation;
 @property (nonatomic, strong) NSURLRequest *HTMLRequest;
 
 @end
 
-@implementation AFUIWebViewTests
+@implementation AFWKWebViewTests
 
-- (void)setUp {
+-(void)setUp {
     [super setUp];
-    self.webView = [UIWebView new];
+    self.webView = [WKWebView new];
+    self.navigation = [WKNavigation new];
     self.HTMLRequest = [NSURLRequest requestWithURL:[self.baseURL URLByAppendingPathComponent:@"html"]];
 }
 
@@ -42,25 +44,25 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"Request should succeed"];
     [self.webView
      loadRequest:self.HTMLRequest
+     navigation:self.navigation
      progress:nil
      success:^NSString * _Nonnull(NSHTTPURLResponse * _Nonnull response, NSString * _Nonnull HTML) {
          [expectation fulfill];
          return HTML;
-     }
-     failure:nil];
+    } failure:nil];
     [self waitForExpectationsWithCommonTimeout];
 }
 
-- (void)testNULLProgressDoesNotCauseCrash {
+- (void)testNUllProgressDoesNotCauseCrash {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Request should succeed"];
     [self.webView
      loadRequest:self.HTMLRequest
+     navigation:self.navigation
      progress:NULL
      success:^NSString * _Nonnull(NSHTTPURLResponse * _Nonnull response, NSString * _Nonnull HTML) {
          [expectation fulfill];
          return HTML;
-     }
-     failure:nil];
+     } failure:nil];
     [self waitForExpectationsWithCommonTimeout];
 }
 
@@ -69,12 +71,12 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"Request should succeed"];
     [self.webView
      loadRequest:self.HTMLRequest
+     navigation:self.navigation
      progress:&progress
      success:^NSString * _Nonnull(NSHTTPURLResponse * _Nonnull response, NSString * _Nonnull HTML) {
          [expectation fulfill];
          return HTML;
-     }
-     failure:nil];
+    } failure:nil];
     [self keyValueObservingExpectationForObject:progress
                                         keyPath:@"fractionCompleted"
                                   expectedValue:@(1.0)];
@@ -87,17 +89,17 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"Request should succeed"];
     [self.webView
      loadRequest:customHeaderRequest
+     navigation:self.navigation
      progress:NULL
      success:^NSString * _Nonnull(NSHTTPURLResponse * _Nonnull response, NSString * _Nonnull string) {
-         // Here string is actually JSON.
+         // Here string is actually JSON
          NSDictionary<NSString *, NSDictionary *> *responseObject = [NSJSONSerialization JSONObjectWithData:[string dataUsingEncoding:NSUTF8StringEncoding] options:(NSJSONReadingOptions)0 error:nil];
 
          NSDictionary<NSString *, NSString *> *headers = responseObject[@"headers"];
          XCTAssertTrue([headers[@"Custom-Header-Field"] isEqualToString:@"Custom-Header-Value"]);
          [expectation fulfill];
          return string;
-     }
-     failure:nil];
+    } failure:nil];
     [self waitForExpectationsWithCommonTimeout];
 }
 
